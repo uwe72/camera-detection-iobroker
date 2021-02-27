@@ -2,7 +2,7 @@
 // Es gibt 4 Stellen wo was getan werden muss, Siehe Handlungsbedarf 1-4
 
 // ####################################################################################################
-// # HANDLUNGSBEDARF 1: NPM-Module installieren                                                       #
+// # HANDLUNGSBEDARF 1 von 4: NPM-Module installieren                                                 #
 // ####################################################################################################
 
 /**
@@ -28,7 +28,7 @@ const gm            = require('gm');
 const disk_fs       = require('fs');      
 
 // ####################################################################################################
-// # HANDLUNGSBEDARF 2: KAMERA-KONFIGURIEREN                                                          #
+// # HANDLUNGSBEDARF 2 von 4: KAMERA-KONFIGURIEREN                                                    #
 // ####################################################################################################
 
 /**
@@ -72,8 +72,8 @@ const disk_fs       = require('fs');
  * [18] Basisverzeichnis wo das Bild abgelegt wird. Bitte auf das abschließende "/" achten. D.h. String muss mit "/" enden. Achtung!!! Der ioBroker User muss darauf Schreibberechtigung haben!!
  */
 var camera = new Camera(
-    "http://192.168.178.47/tmpfs/snap.jpg?usr=usr1&pwd=mypassword",     // [01] URL der Kamera           (Erklärung, siehe oben)
-    "Haustuere",                                                        // [02] Name der Kamera          (Erklärung, siehe oben)
+    "http://192.168.178.47/tmpfs/snap.jpg?usr=admin&pwd=nonenone347",   // [01] URL der Kamera           (Erklärung, siehe oben)
+    "Haustuere",                                                         // [02] Name der Kamera          (Erklärung, siehe oben)
     new TelegramAlarm(                                                  
         true,                                                           // [03] Telegram aktiv           (Erklärung, siehe oben)
         "telegram.0",                                                   // [04] Instanz                  (Erklärung, siehe oben)
@@ -100,21 +100,8 @@ var camera = new Camera(
     )
 );
 
-/**
- * Datenpunkt anlegen in den die Bilderkennungsergebnisse abgespeichert werden
- */
-if (camera.detectionState.isActive) {
-    createState(camera.detectionState.stateName, "", {
-        name: "Kamera " + camera.name,
-        desc: "Bilderkennungsergebnisse der Kamera " + camera.name,
-        type: 'string', 
-        read: true,
-        write: true
-    });
-}
-
 // ####################################################################################################
-// # HANDLUNGSBEDARF 3: ALEXA-DURCHSAGE ANPASSEN (OPTIONAL, nur falls oben bei Alexa-Active=true      #
+// # HANDLUNGSBEDARF 3 von 4: ALEXA-DURCHSAGE ANPASSEN (OPTIONAL, nur falls oben bei Alexa-Active=true#
 // ####################################################################################################
 
 /**
@@ -129,14 +116,14 @@ function handleAlexaAlarm(numberObjectDetectionsWithinImage) {
     }
 
     // Alexa:
-    setState("alexa2.0.Echo-Devices.03895f74a53434171c68b388651.Commands.speak", sayThis); 		
+    setState("alexa2.0.Echo-Devices.03895f74a5464c7c9d7171c68b388651.Commands.speak", sayThis); 		
 
     // Google Home:
     setState("sayit.0.tts.text", sayThis);    
 }
 
 // ####################################################################################################
-// # HANDLUNGSBEDARF 4: ANPASSEN IN WELCHEM INTERVALL BILDERKENNUNG DURCHGEFÜHRT WERDEN SOLL          #
+// # HANDLUNGSBEDARF 4 von4 : ANPASSEN IN WELCHEM INTERVALL BILDERKENNUNG DURCHGEFÜHRT WERDEN SOLL    #
 // ####################################################################################################
 
 /**
@@ -151,6 +138,19 @@ setInterval(function() {
 // ####################################################################################################
 
 // AB hier keine Änderungen mehr vornehmen !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+/**
+ * Datenpunkt anlegen in den die Bilderkennungsergebnisse abgespeichert werden
+ */
+if (camera.detectionState.isActive) {
+    createState(camera.detectionState.stateName, "", {
+        name: "Kamera " + camera.name,
+        desc: "Bilderkennungsergebnisse der Kamera " + camera.name,
+        type: 'string', 
+        read: true,
+        write: true
+    });
+}
 
 /**
  * Alle 10 Sekunden prüfen wir, ob es eine Nachricht mit einer Erkennung zu versenden gibt

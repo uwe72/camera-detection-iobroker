@@ -72,8 +72,8 @@ const disk_fs       = require('fs');
  * [18] Basisverzeichnis wo das Bild abgelegt wird. Bitte auf das abschließende "/" achten. D.h. String muss mit "/" enden. Achtung!!! Der ioBroker User muss darauf Schreibberechtigung haben!!
  */
 var camera = new Camera(
-    "http://192.168.178.47/tmpfs/snap.jpg?usr=admin&pwd=nonenone347",   // [01] URL der Kamera           (Erklärung, siehe oben)
-    "Haustuere",                                                         // [02] Name der Kamera          (Erklärung, siehe oben)
+    "http://192.168.178.47/tmpfs/snap.jpg?usr=admin&pwd=37947343",      // [01] URL der Kamera           (Erklärung, siehe oben)
+    "Haustuere",                                                        // [02] Name der Kamera          (Erklärung, siehe oben)
     new TelegramAlarm(                                                  
         true,                                                           // [03] Telegram aktiv           (Erklärung, siehe oben)
         "telegram.0",                                                   // [04] Instanz                  (Erklärung, siehe oben)
@@ -116,7 +116,7 @@ function handleAlexaAlarm(numberObjectDetectionsWithinImage) {
     }
 
     // Alexa:
-    setState("alexa2.0.Echo-Devices.03895f74a5464c7c9d7171c68b388651.Commands.speak", sayThis); 		
+    setState("alexa2.0.Echo-Devices.34343434.Commands.speak", sayThis); 		
 
     // Google Home:
     setState("sayit.0.tts.text", sayThis);    

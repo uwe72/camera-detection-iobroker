@@ -72,7 +72,7 @@ const disk_fs       = require('fs');
  * [18] Basisverzeichnis wo das Bild abgelegt wird. Bitte auf das abschließende "/" achten. D.h. String muss mit "/" enden. Achtung!!! Der ioBroker User muss darauf Schreibberechtigung haben!!
  */
 var camera = new Camera(
-    "http://192.168.178.47/tmpfs/snap.jpg?usr=admin&pwd=37947343",      // [01] URL der Kamera           (Erklärung, siehe oben)
+    "http://192.168.178.47/tmpfs/snap.jpg?usr=admin&pwd=ewererrrrrr",   // [01] URL der Kamera           (Erklärung, siehe oben)
     "Haustuere",                                                        // [02] Name der Kamera          (Erklärung, siehe oben)
     new TelegramAlarm(                                                  
         true,                                                           // [03] Telegram aktiv           (Erklärung, siehe oben)
@@ -116,7 +116,7 @@ function handleAlexaAlarm(numberObjectDetectionsWithinImage) {
     }
 
     // Alexa:
-    setState("alexa2.0.Echo-Devices.34343434.Commands.speak", sayThis); 		
+    setState("alexa2.0.Echo-Devices.rrrrrtfwert3535454.Commands.speak", sayThis); 		
 
     // Google Home:
     setState("sayit.0.tts.text", sayThis);    
@@ -181,13 +181,6 @@ setInterval(function() {
 // ####################################################################################################
 var runningNumber = 0;
 var model;
-
-/**
- * Wir speichern uns die Bilder im Memory um die Festplatte nicht zu belasten. Zudem malen wir die Boxes nur auf die Erkennungsbilder wenn das Bild auch versendet wird, z.B. mit Telegram
- * Nicht jedes erkannte Bild wird versendet, deshalb speichern wir uns die Koordinaten um ggf. zu einem späteren Zeitpunkt (nur beste Bild der letzten z.B. 60s wird nach Telegram versendet)
- * Key: currentImageMemoryFileName, Value: Koordinaten bzw. Detection-Ergebnis
- */
-var memoryFileName2DetectionResultsMap = new Map();
 
 /**
  * In einem bestimmten Intervall wird die Bilderkennung aufgerufen
@@ -279,43 +272,39 @@ function findAndScheduleAlarms(detectionJsonResults, body) {
             if (err) {
                 console.error("Fehler beim Speichern des Bildes: " + err);
             } else {
-                memoryFileName2DetectionResultsMap.set(currentImageMemoryFileName, detectionJsonResults);
 
-                // Telegram Alarm vorhanden:
-                if (isTelegramAlarmFound) {
+                // Boxen zeichnen:
+                drawDetectionBoxes(detectionJsonResults, currentImageMemoryFileName, currentImageMemoryFileName, function(result) { 
+                    if (isTelegramAlarmFound) { // Telegram Alarm vorhanden:
 
-                    // Timer stellen?!:
-                    if (telegramSendAlarmDateMs == null) {
-                        telegramSendAlarmDateMs = now + (camera.telegramAlarm.intervallSeconds * 1000);
-                    }
+                        // Timer stellen?!:
+                        if (telegramSendAlarmDateMs == null) {
+                            telegramSendAlarmDateMs = now + (camera.telegramAlarm.intervallSeconds * 1000);
+                        }
 
-                    // Beste Bild im Intervall?!
-                    if (currentTelegramScoreRate >= telegramBestScoreRateWithinCurrentIntervall) {
-                        telegramBestScoreRateWithinCurrentIntervall = currentTelegramScoreRate;
-                        telegramBestImageMemoryFileNameWithinCurrentIntervall = currentImageMemoryFileName;
-                    }
-                } 
+                        // Beste Bild im Intervall?!
+                        if (currentTelegramScoreRate >= telegramBestScoreRateWithinCurrentIntervall) {
+                            telegramBestScoreRateWithinCurrentIntervall = currentTelegramScoreRate;
+                            telegramBestImageMemoryFileNameWithinCurrentIntervall = currentImageMemoryFileName;
+                        }
+                    } 
+                    if (isFileAlarmFound) { // File Alarm vorhanden:
 
-                // File Alarm vorhanden:
-                if (isFileAlarmFound) {
+                        // Timer stellen?!:
+                        if (fileSendAlarmDateMs == null) {
+                            fileSendAlarmDateMs = now + (camera.fileAlarm.intervallSeconds * 1000);
+                        }
 
-                    // Timer stellen?!:
-                    if (fileSendAlarmDateMs == null) {
-                        fileSendAlarmDateMs = now + (camera.fileAlarm.intervallSeconds * 1000);
-                    }
-
-                    // Beste Bild im Intervall?!
-                    if (currentFileScoreRate >= fileBestScoreRateWithinCurrentIntervall) {
-                        fileBestScoreRateWithinCurrentIntervall = currentFileScoreRate;
-                        fileBestImageMemoryFileNameWithinCurrentIntervall = currentImageMemoryFileName;
-                    }
-                } 
-                
-
+                        // Beste Bild im Intervall?!
+                        if (currentFileScoreRate >= fileBestScoreRateWithinCurrentIntervall) {
+                            fileBestScoreRateWithinCurrentIntervall = currentFileScoreRate;
+                            fileBestImageMemoryFileNameWithinCurrentIntervall = currentImageMemoryFileName;
+                        }
+                    } 
+                });
             }
-        });
+        })
     }
-
 
     // Alexa-Alarm vorhanden:
     if (isAlexaAlarmFound) {
@@ -379,22 +368,17 @@ function executeTelegramAlarm() {
 
                     // Jetzt malen wir die Erkunngsboxen um die erkannten Objekte:
                     log("[Telegram-Alarm] .........Erkennungsboxen (was wurde erkannt, mit welcher Rate) auf Bild malen");                                        
-                    var detectionJsonResults = memoryFileName2DetectionResultsMap.get(frozenFile);
-                    var boxesFilename = frozenFile.replace(".jpg", "_boxes.jpg");
-                    drawDetectionBoxes(detectionJsonResults, frozenFile, boxesFilename, function(result) { 
 
-                        // Und jetzt final nach Telegram versenden:                                
-                        var frozenScoreRateString = (frozenScoreRate * 100).toFixed(0);
-                        var subject = camera.name + " (" + getTranslationForClassName(camera.telegramAlarm.className) + " " + frozenScoreRateString + " %) "+ frozenFile;
-                        log("[Telegram-Alarm] ............Bild nach Telegram versenden");                                        
-                        sendTo('telegram.0', {text: boxesFilename, caption: subject});
+                    // Und jetzt final nach Telegram versenden:                                
+                    var frozenScoreRateString = (frozenScoreRate * 100).toFixed(0);
+                    var subject = camera.name + " (" + getTranslationForClassName(camera.telegramAlarm.className) + " " + frozenScoreRateString + " %) "+ frozenFile;
+                    log("[Telegram-Alarm] ............Bild nach Telegram versenden");                                        
+                    sendTo('telegram.0', {text: frozenFile, caption: subject});
 
-                        // Werte zurücksetzen, neues Erkennungsintervall beginnt:
-                        telegramBestScoreRateWithinCurrentIntervall = -1;
-                        telegramBestImageMemoryFileNameWithinCurrentIntervall = "";
-                        telegramSendAlarmDateMs = null;
-                    });  
-
+                    // Werte zurücksetzen, neues Erkennungsintervall beginnt:
+                    telegramBestScoreRateWithinCurrentIntervall = -1;
+                    telegramBestImageMemoryFileNameWithinCurrentIntervall = "";
+                    telegramSendAlarmDateMs = null;
                 }
             );
         } else {
@@ -447,27 +431,24 @@ function executeFileAlarm() {
 
                             // Jetzt malen wir noch die Erkunngsboxen um die erkannten Objekte und aktualisieren das bereits gespeicherte Bild auf der Festplatte:
                             log("[File-Alarm] .........Erkennungsboxen (was wurde erkannt, mit welcher Rate) auf Bild malen");                                        
-                            var detectionJsonResults = memoryFileName2DetectionResultsMap.get(frozenFile);
-                            drawDetectionBoxes(detectionJsonResults, fileOutputFilename, fileOutputFilename, function(result) { 
 
-                                // Zudem noch Bild in einem Unterordner mit einem Zeitstempel abspeichern.
-                                var d = new Date();
-                                var fileName = d.getHours().toString().padStart(2,'0') + d.getMinutes().toString().padStart(2,'0') + d.getSeconds().toString().padStart(2,'0') + ".jpg";
-                                var folder = camera.fileAlarm.baseDirectory + "Kamera_Alarm/" + formatDate(new Date(), "JJJJ-MM-TT") + "/" + camera.name + "/";
-                                disk_fs.mkdir(folder, { recursive: true }, (err) => {
-                                    if (err) {
-                                        console.error("Berechtigungsthema?! Fehler beim alegen des Ordners " + folder);
-                                        throw err;
-                                    } else {
-                                        disk_fs.createReadStream(fileOutputFilename).pipe(disk_fs.createWriteStream(folder + fileName));
-                                    }; 
-                                });
+                            // Zudem noch Bild in einem Unterordner mit einem Zeitstempel abspeichern.
+                            var d = new Date();
+                            var fileName = d.getHours().toString().padStart(2,'0') + d.getMinutes().toString().padStart(2,'0') + d.getSeconds().toString().padStart(2,'0') + ".jpg";
+                            var folder = camera.fileAlarm.baseDirectory + "Kamera_Alarm/" + formatDate(new Date(), "JJJJ-MM-TT") + "/" + camera.name + "/";
+                            disk_fs.mkdir(folder, { recursive: true }, (err) => {
+                                if (err) {
+                                    console.error("Berechtigungsthema?! Fehler beim alegen des Ordners " + folder);
+                                    throw err;
+                                } else {
+                                    disk_fs.createReadStream(fileOutputFilename).pipe(disk_fs.createWriteStream(folder + fileName));
+                                }; 
+                            });
 
-                                // Werte zurücksetzen, neues Erkennungsintervall beginnt:
-                                fileBestScoreRateWithinCurrentIntervall = -1;
-                                fileBestImageMemoryFileNameWithinCurrentIntervall = "";
-                                fileSendAlarmDateMs = null;
-                            });  
+                            // Werte zurücksetzen, neues Erkennungsintervall beginnt:
+                            fileBestScoreRateWithinCurrentIntervall = -1;
+                            fileBestImageMemoryFileNameWithinCurrentIntervall = "";
+                            fileSendAlarmDateMs = null;
                         }
                     });
 

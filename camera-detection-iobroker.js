@@ -72,7 +72,7 @@ const disk_fs       = require('fs');
  * [18] Basisverzeichnis wo das Bild abgelegt wird. Bitte auf das abschließende "/" achten. D.h. String muss mit "/" enden. Achtung!!! Der ioBroker User muss darauf Schreibberechtigung haben!!
  */
 var camera = new Camera(
-    "http://192.168.178.47/tmpfs/snap.jpg?usr=admin&pwd=ewererrrrrr",   // [01] URL der Kamera           (Erklärung, siehe oben)
+    "http://192.168.178.47/tmpfs/snap.jpg?usr=admin&pwd=fdijhfidddd",   // [01] URL der Kamera           (Erklärung, siehe oben)
     "Haustuere",                                                        // [02] Name der Kamera          (Erklärung, siehe oben)
     new TelegramAlarm(                                                  
         true,                                                           // [03] Telegram aktiv           (Erklärung, siehe oben)
@@ -116,7 +116,7 @@ function handleAlexaAlarm(numberObjectDetectionsWithinImage) {
     }
 
     // Alexa:
-    setState("alexa2.0.Echo-Devices.rrrrrtfwert3535454.Commands.speak", sayThis); 		
+    setState("alexa2.0.Echo-Devices.fretttrrtrtrtrt.Commands.speak", sayThis); 		
 
     // Google Home:
     setState("sayit.0.tts.text", sayThis);    
@@ -323,20 +323,16 @@ function findAndScheduleAlarms(detectionJsonResults, body) {
 // ####################################################################################################
 var lastOccuredAlexaAlarmInMs = -1;
 
-// ALARM:
 function executeAlexaAlarm(numberAlexaHits) {
-    var nowDate = new Date();
-    if (nowDate.getHours() != 6) {  // Nicht zwischen 6 und 7 Uhr morgens ;-)
-        var differenzAlexa = 0;
-        if (lastOccuredAlexaAlarmInMs != -1) {
-            differenzAlexa = new Date().getTime() - lastOccuredAlexaAlarmInMs;            
-        } else {
-            differenzAlexa = 9999999;
-        }
-        if (differenzAlexa > (camera.alexaAlarm.intervallSeconds *1000)) { // nur einmal im konfiguriertem Intervall
-            handleAlexaAlarm(numberAlexaHits);
-            lastOccuredAlexaAlarmInMs = new Date().getTime();
-        }
+    var differenzAlexa = 0;
+    if (lastOccuredAlexaAlarmInMs != -1) {
+        differenzAlexa = new Date().getTime() - lastOccuredAlexaAlarmInMs;            
+    } else {
+        differenzAlexa = 9999999;
+    }
+    if (differenzAlexa > (camera.alexaAlarm.intervallSeconds *1000)) { // nur einmal im konfiguriertem Intervall
+        handleAlexaAlarm(numberAlexaHits);
+        lastOccuredAlexaAlarmInMs = new Date().getTime();
     }
 };
 
@@ -359,7 +355,7 @@ function executeTelegramAlarm() {
             log("[Telegram-Alarm] Zielzeit erreicht. Versende Bild: " + frozenFile);
 
             // Laden des Bildes:
-            log("[Telegram-Alarm] ...Original-Erkennungsbild aus RAM laden.");
+            log("[Telegram-Alarm] ...Original-Erkennungsbild laden.");
             disk_fs.readFile(frozenFile,
                 async function read(err, data) {
                     if (err) {
@@ -442,6 +438,7 @@ function executeFileAlarm() {
                                     throw err;
                                 } else {
                                     disk_fs.createReadStream(fileOutputFilename).pipe(disk_fs.createWriteStream(folder + fileName));
+                                    log("[File-Alarm] ............Image gespeichert");                                        
                                 }; 
                             });
 
